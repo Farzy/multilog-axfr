@@ -21,6 +21,3 @@ axfr:
 
 # autoaxfr's root directory
 axfr_root: /etc/service/autoaxfr/root
-
-# Set a sudo command if you need one
-sudo_cmd: sudo -u Gdnslog

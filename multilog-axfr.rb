@@ -39,7 +39,6 @@ class App
     # Default configuration
     @configfile = "/etc/djbdns-axfr.conf"
     @axfr_root = "/etc/services/autoaxfr/root"
-    @sudo_cmd = nil
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: #{progname} [options] multilog-options"
@@ -56,7 +55,6 @@ class App
       config = YAML.load(IO.read(@configfile))
       @axfr_ip_zones = config['axfr']
       @axfr_root = config['axfr_root'] if !config['axfr_root'].nil?
-      @sudo_cmd = config['sudo_cmd']
 
       raise ArgumentError, "Zone file not found" if @axfr_ip_zones.nil?
       raise ArgumentError, "autoaxfr root directory '#{@axfr_root}' not found" if !File.directory?(@axfr_root)
@@ -96,8 +94,7 @@ class App
                 File.join(@axfr_root, 'temp', domain + '.temp') ]
         pid = fork do
           File.delete(File.join(@axfr_root, 'zones', domain)) rescue nil
-          # The sudo command is optionnal and may be nil
-          exec(*[@sudo_cmd, cmd].flatten.compact)
+          exec(*cmd)
         end
         Process.detach(pid)
         # XXX call method to update your data.cdb here...
