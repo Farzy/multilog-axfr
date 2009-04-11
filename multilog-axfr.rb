@@ -95,7 +95,7 @@ class App
                 File.join(@axfr_root, 'zones', domain),
                 File.join(@axfr_root, 'temp', domain + '.temp') ]
         pid = fork do
-          File.delete(File.join(@axfr_root, 'zones', domain))
+          File.delete(File.join(@axfr_root, 'zones', domain)) rescue nil
           # The sudo command is optionnal and may be nil
           exec(*[@sudo_cmd, cmd].flatten.compact)
         end
