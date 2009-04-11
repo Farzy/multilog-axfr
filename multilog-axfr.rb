@@ -65,7 +65,7 @@ class App
     end
 
     # The other arguments will be passed as is to 'multilog'
-    @multilog_args = argv.joint(" ")
+    @multilog_args = argv.join(" ")
   end
 
   def run
