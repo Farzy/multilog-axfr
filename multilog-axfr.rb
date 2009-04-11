@@ -74,7 +74,7 @@ class App
 
     puts "multilog-axfr v#{VER} started."
 
-    while line = gets
+    while line = $stdin.gets
       print line
       ip_port_qid, sid, qtype, domain = line.chomp.split(/ /)
       next if [ip_port_qid, sid, qtype, domain].any? { |s| s.nil? }
@@ -83,7 +83,7 @@ class App
       hexip, hexport, sid = ip_port_qid.split(/:/)
       # Convert hexadecimal IP, like "A343D5F3", to "163.67.213.243"
       ip = [hexip].pack("H8").unpack("C*").join(".")
-      zones = AXFR_IP_ZONES[ip]
+      zones = @axfr_ip_zones[ip]
       next unless zones
 
       if zones.first == "any" or zones.include?(domain)
