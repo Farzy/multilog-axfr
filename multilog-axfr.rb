@@ -60,7 +60,7 @@ class App
       raise ArgumentError, "autoaxfr root directory '#{@axfr_root}' not found" if !File.directory?(@axfr_root)
       raise ArgumentError, "multilog arguments missing" if argv.nil?
     rescue Errno::ENOENT, ArgumentError => exc
-      $stderr.puts "#{progname}: Error reading configuration file. #{exc}"
+      $stderr.puts "#{progname}: Configuration error. #{exc}"
       exit 1
     end
 

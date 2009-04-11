@@ -20,4 +20,4 @@ axfr:
 # Optional parameters
 
 # autoaxfr's root directory
-axfr_root: /etc/autoaxfr/root
+axfr_root: /etc/service/autoaxfr/root
