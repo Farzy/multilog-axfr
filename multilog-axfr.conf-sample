@@ -17,3 +17,7 @@ axfr:
     - mydomain.com
     - another.one
 
+# Optional parameters
+
+# autoaxfr's root directory
+axfr_root: /etc/autoaxfr/root

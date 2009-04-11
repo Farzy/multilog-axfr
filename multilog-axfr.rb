@@ -37,26 +37,27 @@ class App
     progname = File.basename($0)
 
     # Default configuration
-    @options = OpenStruct.new
-    @options.configfile = "/etc/djbdns-axfr.conf"
-    @options.axfr_root = "/etc/services/autoaxfr/root"
+    @configfile = "/etc/djbdns-axfr.conf"
+    @axfr_root = "/etc/services/autoaxfr/root"
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: #{progname} [options] multilog-options"
       opts.separator ""
       opts.on("-c", "--conf CONFIG_FILE", String,
               "Path of the IP/zones authorization file") do |path|
-        @options.configfile = path
+        @configfile = path
       end
     end
     opts.parse!(argv)
 
     # Read config file and check
     begin
-      config = YAML.load(IO.read(@options.configfile))
+      config = YAML.load(IO.read(@configfile))
       @axfr_ip_zones = config['axfr']
+      @axfr_root = config['axfr_root'] if !config['axfr_root'].nil?
+
       raise ArgumentError, "Zone file not found" if @axfr_ip_zones.nil?
-      raise ArgumentError, "autoaxfr root directory '#{@options.axfr_root}' not found" if !File.directory?(@options.axfr_root)
+      raise ArgumentError, "autoaxfr root directory '#{@axfr_root}' not found" if !File.directory?(@axfr_root)
       raise ArgumentError, "multilog arguments missing" if argv.nil?
     rescue Errno::ENOENT, ArgumentError => exc
       $stderr.puts "#{progname}: Error reading configuration file. #{exc}"
@@ -89,12 +90,11 @@ class App
         `logger -t axfr-watch "rcvd NTFY #{ip} (#{domain})"`;
         `logger -t axfr-watch "send AXFR #{ip} (#{domain})"`;
         pid = fork { exec('tcpclient', ip, '53', 'axfr-get', domain,
-                          File.join(@options.axfr_root, 'zones', domain),
-                          File.join(@options.axfr_root, 'temp', domain + '.temp'))
+                          File.join(@axfr_root, 'zones', domain),
+                          File.join(@axfr_root, 'temp', domain + '.temp'))
         }
         Process.detach(pid)
-        #`tcpclient $ip 53 axfr-get $domain $domain.data $domain.tmp`;
-        # call method to update your data.cdb here...
+        # XXX call method to update your data.cdb here...
       else
         `logger -t axfr-watch "nvld NTFY #{ip} (#{ip_port_qid} #{sid} #{qtype} #{domain})"`;
       end
