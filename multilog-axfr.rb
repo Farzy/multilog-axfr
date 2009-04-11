@@ -89,10 +89,10 @@ class App
       if zones.first == "any" or zones.include?(domain)
         `logger -t axfr-watch "rcvd NTFY #{ip} (#{domain})"`;
         `logger -t axfr-watch "send AXFR #{ip} (#{domain})"`;
-        pid = fork { exec('tcpclient', ip, '53', 'axfr-get', domain,
-                          File.join(@axfr_root, 'zones', domain),
-                          File.join(@axfr_root, 'temp', domain + '.temp'))
-        }
+        cmd = [ 'tcpclient', ip, '53', 'axfr-get', domain,
+                File.join(@axfr_root, 'zones', domain),
+                File.join(@axfr_root, 'temp', domain + '.temp') ]
+        pid = fork { exec(*cmd) }
         Process.detach(pid)
         # XXX call method to update your data.cdb here...
       else
