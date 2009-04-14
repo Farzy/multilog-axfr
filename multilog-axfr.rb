@@ -38,7 +38,7 @@ class App
 
     # Default configuration
     @configfile = "/etc/djbdns-axfr.conf"
-    @axfr_root = "/etc/services/autoaxfr/root"
+    @axfr_root = "/etc/service/autoaxfr/root"
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: #{progname} [options] multilog-options"
