@@ -30,6 +30,43 @@ require 'optparse'
 require 'ostruct'
 require 'yaml'
 
+# List of the slave DNS domains and the corresponding autorized
+# primary DNS IPs for each of them
+class SlaveZones
+  attr_reader :ip_domains
+
+  def initialize(axfr_root)
+    raise ArgumentError, "autoaxfr root directory '#{axfr_root}' not found" if !File.directory?(axfr_root)
+    @axfr_root = axfr_root
+    reload!
+  end
+
+  # Read the slave authorization list from the autoaxfr slaves directory,
+  # usually "[etc]/service/autoaxfr/root/slaves".
+  def reload!
+    # List of files named after domaines and containing an IP list
+    domain_files = Dir[File.join(@axfr_root, "slaves", "*")]
+    # .. converted to a hash of ip => [ array of domains ]
+    @ip_domains = {}
+    domain_files.each do |domain|
+      File.read(domain).split.each do |ip|
+        @ip_domains[ip] ||= []
+        @ip_domains[ip] << File.basename(domain)
+      end
+    end
+  end
+
+  # Is the IP an authorized DNS master for the Domain?
+  def authorized?(ip, domain)
+    authorized_domains = @ip_domains[ip]
+    return false if authorized_domains.nil?
+    if autorized_domains.include?("any") or authorized_domains.include?(domain)
+      return true
+    end
+    return false
+  end
+end
+
 class App
   VER = "1.0"
 
@@ -44,7 +81,7 @@ class App
       opts.banner = "Usage: #{progname} [options] multilog-options"
       opts.separator ""
       opts.on("-c", "--conf CONFIG_FILE", String,
-              "Path of the IP/zones authorization file") do |path|
+              "Path of the IP/domains authorization file") do |path|
         @configfile = path
       end
     end
@@ -53,10 +90,10 @@ class App
     # Read config file and check
     begin
       config = YAML.load(IO.read(@configfile))
-      @axfr_ip_zones = config['axfr']
       @axfr_root = config['axfr_root'] if !config['axfr_root'].nil?
+      @slave_zones = SlaveZones.new(@axfr_root)
 
-      raise ArgumentError, "Zone file not found" if @axfr_ip_zones.nil?
+      raise ArgumentError, "Zone file not found" if @axfr_ip_domains.nil?
       raise ArgumentError, "autoaxfr root directory '#{@axfr_root}' not found" if !File.directory?(@axfr_root)
       raise ArgumentError, "multilog arguments missing" if argv.nil?
     rescue Errno::ENOENT, ArgumentError => exc
@@ -80,13 +117,13 @@ class App
       next if [ip_port_qid, sid, qtype, domain].any? { |s| s.nil? }
       # Select NOTIFY messages
       next unless sid == "I" and qtype == "0006"
+      # We have a DNS NOTIFY request
       hexip, hexport, sid = ip_port_qid.split(/:/)
       # Convert hexadecimal IP, like "A343D5F3", to "163.67.213.243"
       ip = [hexip].pack("H8").unpack("C*").join(".")
-      zones = @axfr_ip_zones[ip]
-      next unless zones
-
-      if zones.first == "any" or zones.include?(domain)
+      # Check authorization and do the transfer
+      @slave_zones.reload!
+      if @slave_zones.authorized?(ip, domain)
         `logger -t axfr-watch "rcvd NTFY #{ip} (#{domain})"`;
         `logger -t axfr-watch "send AXFR #{ip} (#{domain})"`;
         cmd = [ 'tcpclient', ip, '53', 'axfr-get', domain,
@@ -95,9 +132,12 @@ class App
         pid = fork do
           File.delete(File.join(@axfr_root, 'zones', domain)) rescue nil
           exec(*cmd)
+          # XXX Call method to update your data.cdb here...
+          # I suggest using "incron" <http://inotify.aiken.cz/?section=incron&page=about&lang=en>
+          # to automatically launch "make" in tinydns's
+          # directory when domain files are modified.
         end
         Process.detach(pid)
-        # XXX call method to update your data.cdb here...
       else
         `logger -t axfr-watch "nvld NTFY #{ip} (#{ip_port_qid} #{sid} #{qtype} #{domain})"`;
       end

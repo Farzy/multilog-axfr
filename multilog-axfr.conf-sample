@@ -6,18 +6,5 @@
 # rename it first. By default 'multilog-axfr' expects a file named
 # '/etc/multilog-axfr.conf'.
 
-# Modifiy the "axfr" section and setup authorized primary BIND servers' IP
-# and the list of domains authorized for each of them
-
-# Authorized IPs and their zones
-axfr:
-  127.0.0.1:
-    - any
-  12.34.56.78:
-    - mydomain.com
-    - another.one
-
-# Optional parameters
-
 # autoaxfr's root directory
 axfr_root: /etc/service/autoaxfr/root
