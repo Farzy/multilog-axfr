@@ -60,7 +60,7 @@ class SlaveZones
   def authorized?(ip, domain)
     authorized_domains = @ip_domains[ip]
     return false if authorized_domains.nil?
-    if autorized_domains.include?("any") or authorized_domains.include?(domain)
+    if authorized_domains.include?("any") or authorized_domains.include?(domain)
       return true
     end
     return false
