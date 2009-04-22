@@ -77,10 +77,10 @@ class App
     @configfile = "/etc/djbdns-axfr.conf"
     @axfr_root = "/etc/service/autoaxfr/root"
 
-    opts = OptionParser.new do |opts|
-      opts.banner = "Usage: #{progname} [options] multilog-options"
-      opts.separator ""
-      opts.on("-c", "--conf CONFIG_FILE", String,
+    opts = OptionParser.new do |op|
+      op.banner = "Usage: #{progname} [options] multilog-options"
+      op.separator ""
+      op.on("-c", "--conf CONFIG_FILE", String,
               "Path of the IP/domains authorization file") do |path|
         @configfile = path
       end
