@@ -125,8 +125,8 @@ module Multilog
         # Check authorization and do the transfer
         @slave_zones.reload!
         if @slave_zones.authorized?(ip, domain)
-          `logger -t axfr-watch "rcvd NTFY #{ip} (#{domain})"`;
-          `logger -t axfr-watch "send AXFR #{ip} (#{domain})"`;
+          `logger -p daemon.notice -t axfr-watch "rcvd NTFY #{ip} (#{domain})"`;
+          `logger -p daemon.notice -t axfr-watch "send AXFR #{ip} (#{domain})"`;
           cmd = [ 'tcpclient', ip, '53', 'axfr-get', domain,
                   File.join(@axfr_root, 'zones', domain),
                   File.join(@axfr_root, 'temp', domain + '.temp') ]
@@ -140,7 +140,7 @@ module Multilog
           end
           Process.detach(pid)
         else
-          `logger -t axfr-watch "nvld NTFY #{ip} (#{ip_port_qid} #{sid} #{qtype} #{domain})"`;
+          `logger -p daemon.notice -t axfr-watch "nvld NTFY #{ip} (#{ip_port_qid} #{sid} #{qtype} #{domain})"`;
         end
       end
 
