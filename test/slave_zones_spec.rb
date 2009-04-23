@@ -1,7 +1,6 @@
-# nom-du-programme : Description brève de l'utilité du programme, sur une
-# ou deux lignes.
+# multilog-axfr RSpec test suite
 # 
-# Date : <DATE CREATION>
+# Date : 2009-04-22
 # 
 # Copyright (C) 2009 Farzad FARID <ffarid@pragmatic-source.com>
 # 
@@ -18,7 +17,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#require 'slave_zones'
 path = File.expand_path(File.join(File.dirname(__FILE__), '..', 'bin'))
 $LOAD_PATH.unshift(path)
 require 'multilog-axfr'

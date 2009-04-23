@@ -110,7 +110,7 @@ module Multilog
       logger = IO.popen("multilog " + @multilog_args, "w")
       STDOUT.reopen(logger)
 
-      puts "multilog-axfr v#{VER} started."
+      puts "multilog-axfr v#{VERSION} started."
 
       while line = $stdin.gets
         print line

@@ -10,7 +10,7 @@ Introduction
 But it lacks some features, sometimes called "bugs" by the djbdns author and
 aficionados, usually found in the BIND software.
 
-Especially it doesn't handle NOTIFY messages as a slave server and therefore
+Especially it doesn't handle **NOTIFY** messages as a slave server and therefore
 it can't update its database immediatly if the master server is running BIND.
 
 Given the facts that:
