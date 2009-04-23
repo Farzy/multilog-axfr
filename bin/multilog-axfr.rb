@@ -31,7 +31,7 @@ require 'ostruct'
 require 'yaml'
 
 module Multilog
-    VERSION = "1.0"
+  VERSION = "1.0"
 
   # List of the slave DNS domains and the corresponding autorized
   # primary DNS IPs for each of them
@@ -94,7 +94,6 @@ module Multilog
         @axfr_root = config['axfr_root'] if !config['axfr_root'].nil?
         @slave_zones = Multilog::SlaveZones.new(@axfr_root)
 
-        raise ArgumentError, "Zone file not found" if @axfr_ip_domains.nil?
         raise ArgumentError, "autoaxfr root directory '#{@axfr_root}' not found" if !File.directory?(@axfr_root)
         raise ArgumentError, "multilog arguments missing" if argv.nil?
       rescue Errno::ENOENT, ArgumentError => exc
