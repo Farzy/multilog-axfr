@@ -6,33 +6,34 @@ Copyright (C) 2009 Farzad FARID <ffarid@pragmatic-source.com>
 Introduction
 ------------
 
-[djbdns](http://cr.yp.to/djbdns.html) is a powerful and secure DNS server.
+**[djbdns](http://cr.yp.to/djbdns.html)** is a powerful and secure DNS server.
 But it lacks some features, sometimes called "bugs" by the djbdns author and
-aficionados, usually found in the BIND software.
+contributors, usually found in the **BIND** software.
 
-Especially it doesn't handle **NOTIFY** messages as a slave server and therefore
-it can't update its database immediatly if the master server is running BIND.
+For example it doesn't handle **NOTIFY** messages as a slave server and therefore
+it can't update its database immediatly if the master server running BIND is
+modified and sends an update request to all of its slave DNS.
 
 Given the facts that:
-* BIND is a very popular DNS software and won't disappear soon,
-* the NOTIFY message is pretty standard,
-* not every DNS administrator is a hardcore overzealous djbdns lover,
+*  BIND is a very popular DNS software and won't disappear soon,
+*  the NOTIFY message is pretty standard,
 
-.. this script lets you use djbdns as a slave server for BIND a not be worried
-by unreasonable update delays.
+.. this script lets you use djbdns as a slave server for BIND and not be
+ worried by unreasonable update delays.
 
-Please note that this script does **not** handle all zone transfer action, it
-only catches the NOTIFY event and calls other programs to do the zone transfer
+Please note that this script does **not** handle all zone transfer actions, it
+only catches the NOTIFY event and calls other programs, like `axfr-get`,
+to do the zone transfer
 itself.
 
 Installation
 ------------
 
 multilog-axfr depends on:
-* djbdns's tinydns server
-* daemontools
-* autoaxfr
-* Ruby
+*  djbdns's tinydns server
+*  daemontools
+*  autoaxfr
+*  Ruby
 
 « ruby », « tinydns » and « daemontools » must be installed the usual way, their
 installation process is not covered here.
@@ -52,33 +53,55 @@ tinydns's Makefile.
 
 ### Installing multilog-axfr.rb
 
-Copy multilog-axfr.rb to a directory in your PATH (usually `/usr/local/bin`)
-
-Rename and copy multilog-axfr.conf-sample to a configuration directory (usually
-`/etc` or `/usr/local/etc`).
-
-Modify the « `run` » script of tinydns's logger to use « multilog-axfr.rb »
-instead of « multilog »
-
-Restart tinydns's logger:
-
-### Example configuration
-
 Lets suppose that:
-* All djbdns services are availables under « `/etc/service` »
-* The script is at `/usr/local/bin/multilog-axfr.rb`,
+* All djbdns services are availables under « `/etc/service` ». This is the case
+  on [Debian](http://www.debian.org/) systems. If *djbdns* was installed manually
+  the path is « `/service` ».
+* The present script is at `/usr/local/bin/multilog-axfr.rb`.
 * The configuration file is at `/usr/local/etc/multilog-axfr.conf`,
 * Both the logfiles of tinydns and the zones files of autoaxfr are created
   with the uid/gid « `Gdnslog` ».
 
-Modify « `/etc/service/tinydns/log/run` » to be like:
+Do the following:
+
+*  Copy `multilog-axfr.rb` to a directory in your PATH (usually `/usr/local/bin`)
+
+*  Rename and copy `multilog-axfr.conf-sample` to a configuration directory (usually
+`/etc` or `/usr/local/etc`).
+
+*  Modify the « `run` » script of tinydns's logger to use « `multilog-axfr.rb` »
+instead of « `multilog` ». Here is an example « `/etc/service/tinydns/log/run` »:
+
 
     #!/bin/sh
     exec setuidgid Gdnslog /usr/local/bin/multilog-axfr.rb --conf /usr/local/etc/multilog-axfr.conf t ./main
 
-Restart tinydns's logger:
+*  Restart tinydns's logger:
 
-    svc -t /etc/service/tinydns/log
+
+  svc -t /etc/service/tinydns/log
+
+### Example configuration file
+
+#### /usr/local/etc/multilog-axfr.conf
+
+    # Configuration file for multilog-axfr, the djbdns helper that
+    # implements the Bind NOTIFY functionnality.
+    # This file is in the YAML format (http://www.yaml.org).
+
+    # autoaxfr's root directory
+    axfr_root: /etc/service/autoaxfr/root
+
+
+
+Testing
+-------
+
+This tool uses [RSpec](http://rspec.info/) for testing purpose. Install the
+**rspec** Ruby gem first, you can then run the following command to test multilog-axfr:
+
+    cd /usr/src/multilog-axfr
+    rake test
 
 
 License
