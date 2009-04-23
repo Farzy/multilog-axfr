@@ -81,7 +81,7 @@ instead of « `multilog` ». Here is an example « `/etc/service/tinydns/log/run
 
   svc -t /etc/service/tinydns/log
 
-### Example configuration file
+### Configuration files
 
 #### /usr/local/etc/multilog-axfr.conf
 
@@ -92,12 +92,28 @@ instead of « `multilog` ». Here is an example « `/etc/service/tinydns/log/run
     # autoaxfr's root directory
     axfr_root: /etc/service/autoaxfr/root
 
+#### /etc/service/autoaxfr/root/slaves/*
+
+In this directory create one file per zone in the following format:
+*  Each file should be named after the zone/domain. For example « `linux.com` »
+*  Each file contains the list of the authorized master DNS servers' IP, one per line.
+*  A special zone file named « `any` » will authorize DNS NOTIFY messages for any
+   domaine, coming from the IPs listed in the file.
+
+For example, if « `example.com` » is a domain handled by 192.168.42.42 and
+« `other.sample.com` » is handled by 192.168.69.69 and 10.10.34.84 then the
+following commands will configure both `autoaxfr` and `multilog-axfr` for you:
+
+    cd /etc/service/autoaxfr/root/slaves
+    echo 192.168.42.42 > example.com
+    echo 192.168.69.69 > other.sample.com
+    echo 10.10.34.84  >> other.sample.com
 
 
-Testing
--------
+Testing the code
+----------------
 
-This tool uses [RSpec](http://rspec.info/) for testing purpose. Install the
+This tool uses [RSpec](http://rspec.info/) for testing purposes. Install the
 **rspec** Ruby gem first, you can then run the following command to test multilog-axfr:
 
     cd /usr/src/multilog-axfr
