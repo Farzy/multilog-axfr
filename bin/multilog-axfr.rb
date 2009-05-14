@@ -31,7 +31,7 @@ require 'ostruct'
 require 'yaml'
 
 module Multilog
-  VERSION = "1.0"
+  VERSION = "1.2"
 
   # List of the slave DNS domains and the corresponding autorized
   # primary DNS IPs for each of them
@@ -113,14 +113,14 @@ module Multilog
         # Select NOTIFY messages
         next unless sid == "I" and qtype == "0006"
         # We have a DNS NOTIFY request
-        hexip, hexport, sid = ip_port_qid.split(/:/)
+        hexip, hexport, qid = ip_port_qid.split(/:/)
         # Convert hexadecimal IP, like "A343D5F3", to "163.67.213.243"
         ip = [hexip].pack("H8").unpack("C*").join(".")
         # Check authorization and do the transfer
         @slave_zones.reload!
         if @slave_zones.authorized?(ip, domain)
-          `logger -p daemon.notice -t axfr-watch "rcvd NTFY #{ip} (#{domain})"`;
-          `logger -p daemon.notice -t axfr-watch "send AXFR #{ip} (#{domain})"`;
+          system("logger -p daemon.notice -t axfr-watch 'rcvd NTFY #{ip} (#{domain})'")
+          system("logger -p daemon.notice -t axfr-watch 'send AXFR #{ip} (#{domain})'")
           cmd = [ 'tcpclient', ip, '53', 'axfr-get', domain,
                   File.join(@axfr_root, 'zones', domain),
                   File.join(@axfr_root, 'temp', domain + '.temp') ]
