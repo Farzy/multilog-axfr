@@ -28,7 +28,7 @@ TINYDNS_LOG_SAMPLE = [
   "22446688:ed2a:7b79 I 0006 sample.com\n"
 ]
 
-describe Multilog::App do
+shared_examples_for "Common object initialization" do
   before(:each) do
     sample_path = File.join(File.dirname(__FILE__), '..', 'samples')
     @test_root   = File.join(sample_path, 'root_spec_' + rand(2**16).to_s)
@@ -45,6 +45,10 @@ describe Multilog::App do
     FileUtils.rm_rf(@test_root)
     FileUtils.rm_f(@config_file)
   end
+end
+
+describe "Simple Multilog::App examples" do
+  it_should_behave_like "Common object initialization"
 
   it "should fail if the config file is incorrect" do
     expect { Multilog::App.new([ ]) }.to raise_error(Errno::ENOENT)
@@ -61,31 +65,33 @@ describe Multilog::App do
     app.instance_eval { @multilog_args }.should == 't ./main'
     app.instance_eval { @axfr_root }.should == @test_root
   end
+end
+
+describe "Multilog::App parser examples" do
+  it_should_behave_like "Common object initialization"
+
+  before(:each) do
+    @app = Multilog::App.new([ '-c', @config_file, 't', './main' ])
+    @stdout_file = File.open(File.join(@test_root, 'stdout.log'), 'w+')
+
+    IO.expects(:popen).with('multilog t ./main', 'w').returns(@stdout_file)
+  end
 
   it "should popen 'multilog' and write to it" do
-    app = Multilog::App.new([ '-c', @config_file, 't', './main' ])
-    stdout_file = File.open(File.join(@test_root, 'stdout.log'), 'w+')
-
-    IO.expects(:popen).with('multilog t ./main', 'w').returns(stdout_file)
     STDIN.expects(:gets).returns(false)
-
-    app.run
-    stdout_file.rewind
-    output = stdout_file.readlines
+    @app.run
+    @stdout_file.rewind
+    output = @stdout_file.readlines
     output[0].should match(/^multilog-axfr v.* started.$/)
   end
 
   it "should treat regular logs normally" do
-    app = Multilog::App.new([ '-c', @config_file, 't', './main' ])
-    stdout_file = File.open(File.join(@test_root, 'stdout.log'), 'w+')
-    
-    IO.expects(:popen).with('multilog t ./main', 'w').returns(stdout_file)
     STDIN.expects(:gets).times(4).returns(*TINYDNS_LOG_SAMPLE[0..2]).then.returns(false)
     Multilog::App.any_instance.expects(:system).never
 
-    app.run
-    stdout_file.rewind
-    output = stdout_file.readlines
+    @app.run
+    @stdout_file.rewind
+    output = @stdout_file.readlines
     output[0].should match(/^multilog-axfr v.* started.$/)
     (1..3).each do |n|
       output[n].should == TINYDNS_LOG_SAMPLE[n-1]
@@ -94,19 +100,14 @@ describe Multilog::App do
 
   it "should handle 2 DNS NOTIFY messages" do
     Multilog::SlaveZones.any_instance.expects(:authorized?).returns(true).twice
-
-    app = Multilog::App.new([ '-c', @config_file, 't', './main' ])
-    stdout_file = File.open(File.join(@test_root, 'stdout.log'), 'w+')
-    
-    IO.expects(:popen).with('multilog t ./main', 'w').returns(stdout_file)
     STDIN.expects(:gets).times(4).returns(*TINYDNS_LOG_SAMPLE[3..5]).then.returns(false)
     Multilog::App.any_instance.expects(:system).times(4)
     Multilog::App.any_instance.expects(:fork).twice.returns(100, 200)
     Process.expects(:detach).twice.with(any_of(100, 200))
 
-    app.run
-    stdout_file.rewind
-    output = stdout_file.readlines
+    @app.run
+    @stdout_file.rewind
+    output = @stdout_file.readlines
     output[0].should match(/^multilog-axfr v.* started.$/)
     (1..3).each do |n|
       output[n].should == TINYDNS_LOG_SAMPLE[n+2]
