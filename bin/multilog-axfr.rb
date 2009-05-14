@@ -103,12 +103,11 @@ module Multilog
 
     def run
       logger = IO.popen("multilog " + @multilog_args, "w")
-      STDOUT.reopen(logger)
 
-      puts "multilog-axfr v#{VERSION} started."
+      logger.write("multilog-axfr v#{VERSION} started.\n")
 
-      while line = $stdin.gets
-        print line
+      while line = STDIN.gets
+        logger.write(line)
         ip_port_qid, sid, qtype, domain = line.chomp.split(/ /)
         next if [ip_port_qid, sid, qtype, domain].any? { |s| s.nil? }
         # Select NOTIFY messages
