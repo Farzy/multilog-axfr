@@ -89,17 +89,13 @@ module Multilog
       opts.parse!(argv)
 
       # Read config file and check
-      begin
-        config = YAML.load(IO.read(@configfile))
-        @axfr_root = config['axfr_root'] if !config['axfr_root'].nil?
-        @slave_zones = Multilog::SlaveZones.new(@axfr_root)
+      config = YAML.load(IO.read(@configfile))
+      @axfr_root = config['axfr_root'] if !config['axfr_root'].nil?
 
-        raise ArgumentError, "autoaxfr root directory '#{@axfr_root}' not found" if !File.directory?(@axfr_root)
-        raise ArgumentError, "multilog arguments missing" if argv.nil?
-      rescue Errno::ENOENT, ArgumentError => exc
-        $stderr.puts "#{progname}: Configuration error. #{exc}"
-        exit 1
-      end
+      raise ArgumentError, "autoaxfr root directory '#{@axfr_root}' not found" if !File.directory?(@axfr_root)
+      @slave_zones = Multilog::SlaveZones.new(@axfr_root)
+
+      raise ArgumentError, "multilog arguments missing" if argv.empty?
 
       # The other arguments will be passed as is to 'multilog'
       @multilog_args = argv.join(" ")
@@ -142,8 +138,6 @@ module Multilog
           `logger -p daemon.notice -t axfr-watch "nvld NTFY #{ip} (#{ip_port_qid} #{sid} #{qtype} #{domain})"`;
         end
       end
-
-      exit 0
     end
 
     def test
@@ -155,7 +149,13 @@ end
 
 # Entry point
 if $0 == __FILE__
-  app = Multilog::App.new(ARGV)
-  app.run
+  begin
+    app = Multilog::App.new(ARGV)
+    app.run
+  rescue Errno::ENOENT, ArgumentError => exc
+    $stderr.puts "#{progname}: Configuration error. #{exc}"
+    exit 1
+  end
+  exit 0
 end
 
