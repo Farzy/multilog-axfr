@@ -147,7 +147,7 @@ References
 This script was largely inspired by *multilog.pl*.
 
 * **Author's page**: <http://www.pragmatic-source.com>
-* **multilog-axfr's home page**: <http://github.com/Farzy/multilog-axfr>
+* **multilog-axfr's home page**: <http://opensource.pragmatic-source.com/projects/show/multilog-axfr>
 * **djbdns FAQ** (article about NOTIFY): <http://www.fefe.de/djbdns/#axfr>
 * **multilog.pl**, the source of inspiration for this script: <http://www.fefe.de/djbdns/multilog.pl>
 
