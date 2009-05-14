@@ -11,7 +11,7 @@ file "README.html" => "README.md" do
 end
 
 desc "Run all RSpec examples"
-Spec::Rake::SpecTask.new('test') do |t|
-  t.spec_files = FileList['test/**/*_spec.rb']
+Spec::Rake::SpecTask.new do |t|
+  #t.spec_files = FileList['test/**/*_spec.rb']
   t.spec_opts = [ '--color --format nested' ]
 end
